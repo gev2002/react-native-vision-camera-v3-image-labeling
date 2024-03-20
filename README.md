@@ -3,7 +3,7 @@ The frame processor plugin to image labeling using Google ML Kit library for rea
 
 
 # 🚨 Required Modules
-react-native-vision-camera => 3.9.0
+react-native-vision-camera => 3.9.0 <br/>
 react-native-worklets-core = 0.4.0
 
 ## 💻 Installation
