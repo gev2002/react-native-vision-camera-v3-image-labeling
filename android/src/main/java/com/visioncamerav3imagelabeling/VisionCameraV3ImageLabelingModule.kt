@@ -37,8 +37,8 @@ class VisionCameraV3ImageLabelingModule (proxy : VisionCameraProxy, options: Map
           val map = WritableNativeMap()
           map.putString("label", label.text)
           map.putDouble("confidence", label.confidence.toDouble())
-          map.putInt("index",label.index)
           array.pushMap(map)
+
         }
         return array.toArrayList()
       } catch (e: Exception) {

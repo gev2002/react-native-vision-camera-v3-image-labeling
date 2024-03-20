@@ -32,8 +32,7 @@
     }
 
     MLKImageLabeler *labeler =[MLKImageLabeler imageLabelerWithOptions:options];
-    NSMutableDictionary *data = [[NSMutableDictionary alloc] init];
-    dispatch_group_t dispatchGroup = dispatch_group_create();
+    NSMutableArray *data = [NSMutableArray array];    dispatch_group_t dispatchGroup = dispatch_group_create();
     dispatch_group_enter(dispatchGroup);
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
@@ -50,7 +49,9 @@
             for (MLKImageLabel *label in labels) {
                 NSString *labelText = label.text;
                 float confidence = label.confidence;
-                [data setObject:@(confidence) forKey:labelText];
+                NSDictionary *labelInfo = @{@"confidence": @(confidence),@"label": labelText};
+                [data addObject:labelInfo];
+                
             }
             dispatch_group_leave(dispatchGroup);
         }];
@@ -62,5 +63,8 @@
 VISION_EXPORT_FRAME_PROCESSOR(VisionCameraV3ImageLabelingPlugin, scanImage)
 
 @end
+
+
+
 
 
