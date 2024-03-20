@@ -23,6 +23,8 @@
            withArguments:(NSDictionary* _Nullable)arguments {
     CMSampleBufferRef buffer = frame.buffer;
     MLKVisionImage *image = [[MLKVisionImage alloc] initWithBuffer:buffer];
+    UIImageOrientation orientation = frame.orientation;
+    image.orientation = orientation;
     MLKImageLabelerOptions *options = [[MLKImageLabelerOptions alloc] init];
     if (arguments) {
         NSNumber *minConfidence = arguments[@"minConfidence"];
@@ -51,7 +53,7 @@
                 float confidence = label.confidence;
                 NSDictionary *labelInfo = @{@"confidence": @(confidence),@"label": labelText};
                 [data addObject:labelInfo];
-                
+
             }
             dispatch_group_leave(dispatchGroup);
         }];
@@ -63,8 +65,3 @@
 VISION_EXPORT_FRAME_PROCESSOR(VisionCameraV3ImageLabelingPlugin, scanImage)
 
 @end
-
-
-
-
-
