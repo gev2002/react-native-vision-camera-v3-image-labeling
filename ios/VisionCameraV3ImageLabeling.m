@@ -36,17 +36,12 @@
     MLKImageLabeler *labeler =[MLKImageLabeler imageLabelerWithOptions:options];
     NSMutableArray *data = [NSMutableArray array];    dispatch_group_t dispatchGroup = dispatch_group_create();
     dispatch_group_enter(dispatchGroup);
-    __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         [labeler processImage:image
          completion:^(NSArray<MLKImageLabel *> *labels,NSError *error){
-            if (!weakSelf) {
-                NSLog(@"Self is nil!");
-                return;
-            }
             if (error || !labels) {
-                dispatch_group_leave(dispatchGroup);
-              [NSException raise:@"Error processing Image Labeling" format:@"%@",error];
+                RCTResponseErrorBlock error;
+                return;
             }
             for (MLKImageLabel *label in labels) {
                 NSString *labelText = label.text;
