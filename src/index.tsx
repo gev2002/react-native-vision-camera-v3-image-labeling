@@ -24,6 +24,6 @@ export const Camera = forwardRef(function Camera(props: CameraTypes,ref:Forwarde
     []
   );
   return (
-    !!device && <VisionCamera frameProcessor={frameProcessor} {...props} />
+    !!device && <VisionCamera ref={ref} frameProcessor={frameProcessor} {...props} />
   );
 });
