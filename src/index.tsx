@@ -32,6 +32,7 @@ export const Camera = forwardRef(function Camera(
       'worklet';
       const data: Label = scanImage(frame);
       // @ts-ignore
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       useWorklets(data);
     },
     []

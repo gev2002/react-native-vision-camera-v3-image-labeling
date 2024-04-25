@@ -61,7 +61,7 @@ import {
   useCameraDevice,
   useFrameProcessor,
 } from "react-native-vision-camera";
-import { useImageLabeler } from "react-native-native-image-labeling";
+import { useImageLabeler } from "react-native-vision-camera-v3-image-labeling";
 
 function App() {
   const device = useCameraDevice('back');
