@@ -3,44 +3,47 @@
 #import <MLKitImageLabelingCommon/MLKImageLabeler.h>
 #import <VisionCamera/FrameProcessorPlugin.h>
 #import <VisionCamera/FrameProcessorPluginRegistry.h>
-#import <VisionCamera/VisionCameraProxy.h>
+#import <VisionCameraProxyHolder.h>
 #import <VisionCamera/Frame.h>
 @import MLKitVision;
 
-@interface VisionCameraV3ImageLabelingPlugin : FrameProcessorPlugin
+
+@interface VisionCameraV3ImageLabeling : FrameProcessorPlugin
+@property (nonatomic, strong) MLKImageLabeler *labeler;
+@property (nonatomic, assign) CGFloat minConfidence;
 @end
 
-@implementation VisionCameraV3ImageLabelingPlugin
+@implementation VisionCameraV3ImageLabeling
 
-- (instancetype _Nonnull)initWithProxy:(VisionCameraProxyHolder*)proxy
-                           withOptions:(NSDictionary* _Nullable)options {
-  self = [super initWithProxy:proxy withOptions:options];
-
-  return self;
+- (instancetype)initWithProxy:(VisionCameraProxyHolder*)proxy
+                   withOptions:(NSDictionary* _Nullable)options {
+    self = [super initWithProxy:proxy withOptions:options];
+    if (self) {
+        NSNumber *minConfidence = options[@"minConfidence"];
+        if (minConfidence && [minConfidence floatValue] < 1.0 && [minConfidence floatValue] > 0.0) {
+            self.minConfidence = [minConfidence floatValue];
+            MLKImageLabelerOptions *labelerOptions = [[MLKImageLabelerOptions alloc] init];
+            labelerOptions.confidenceThreshold = [NSNumber numberWithFloat:self.minConfidence];
+            self.labeler = [MLKImageLabeler imageLabelerWithOptions:labelerOptions];
+        }
+    }
+    return self;
 }
 
-- (id _Nullable)callback:(Frame* _Nonnull)frame
-           withArguments:(NSDictionary* _Nullable)arguments {
+- (NSArray *)callback:(Frame* _Nonnull)frame
+         withArguments:(NSDictionary* _Nullable)arguments {
     CMSampleBufferRef buffer = frame.buffer;
     MLKVisionImage *image = [[MLKVisionImage alloc] initWithBuffer:buffer];
     UIImageOrientation orientation = frame.orientation;
     image.orientation = orientation;
-    MLKImageLabelerOptions *options = [[MLKImageLabelerOptions alloc] init];
-    if (arguments) {
-        NSNumber *minConfidence = arguments[@"minConfidence"];
-        if (minConfidence != nil && [minConfidence floatValue] < 1.0 && [minConfidence floatValue] > 0.0) {
-            options.confidenceThreshold = minConfidence;
-        }
-    }
-
-    MLKImageLabeler *labeler =[MLKImageLabeler imageLabelerWithOptions:options];
-    NSMutableArray *data = [NSMutableArray array];    dispatch_group_t dispatchGroup = dispatch_group_create();
+    NSMutableArray *data = [NSMutableArray array];
+    dispatch_group_t dispatchGroup = dispatch_group_create();
     dispatch_group_enter(dispatchGroup);
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        [labeler processImage:image
+        [self.labeler processImage:image
          completion:^(NSArray<MLKImageLabel *> *labels,NSError *error){
             if (error || !labels) {
-                RCTResponseErrorBlock error;
+                dispatch_group_leave(dispatchGroup);
                 return;
             }
             for (MLKImageLabel *label in labels) {
@@ -48,7 +51,6 @@
                 float confidence = label.confidence;
                 NSDictionary *labelInfo = @{@"confidence": @(confidence),@"label": labelText};
                 [data addObject:labelInfo];
-
             }
             dispatch_group_leave(dispatchGroup);
         }];
@@ -57,6 +59,6 @@
     return data;
 }
 
-VISION_EXPORT_FRAME_PROCESSOR(VisionCameraV3ImageLabelingPlugin, scanImage)
+VISION_EXPORT_FRAME_PROCESSOR(VisionCameraV3ImageLabeling, scanImage)
 
 @end

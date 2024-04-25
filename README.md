@@ -3,8 +3,8 @@ The frame processor plugin to image labeling using Google ML Kit library for rea
 
 
 # 🚨 Required Modules
-react-native-vision-camera => 3.9.0 <br/>
-react-native-worklets-core = 0.4.0
+react-native-vision-camera => 4.0.0 <br/>
+react-native-worklets-core = 1.1.1
 
 ## 💻 Installation
 
@@ -24,22 +24,68 @@ yarn add react-native-vision-camera-v3-image-labeling
 ## 💡 Usage
 
 ```js
+import React, { useState } from 'react'
+import { useCameraDevice } from 'react-native-vision-camera'
 import { Camera } from 'react-native-vision-camera-v3-image-labeling';
 
-const [labels,setLabels] = useState(null)
+function App (){
+  const [data,setData] = useState(null)
+  const device = useCameraDevice('back');
+  console.log(data)
+  return(
+    <>
+      {!!device && (
+        <Camera
+          style={StyleSheet.absoluteFill}
+          device={device}
+          isActive
+          // optional
+          options={{
+            minConfidence: 0.1
+          }}
+          callback={(d) => setData(d)}
+        />
+      )}
+    </>
+  )
+}
 
-console.log(labels)
+```
+### Also You Can Use Like This
 
-<Camera
-// optional
-  options={{
-  minConfidence: 0.1
-    }}
-  style={StyleSheet.absoluteFill}
-  device={device}
-  callback={(data) => setLabels(data)}
-  {...props}
-/>
+```js
+import React from 'react';
+import { StyleSheet } from "react-native";
+import {
+  Camera,
+  useCameraDevice,
+  useFrameProcessor,
+} from "react-native-vision-camera";
+import { useImageLabeler } from "react-native-native-image-labeling";
+
+function App() {
+  const device = useCameraDevice('back');
+  const options = {minConfidence : 0.1}
+  const {scanImage} = useImageLabeler(options)
+  const frameProcessor = useFrameProcessor((frame) => {
+    'worklet'
+    const data = scanImage(frame)
+	console.log(data, 'data')
+  }, [])
+  return (
+      <>
+      {!!device && (
+        <Camera
+          style={StyleSheet.absoluteFill}
+          device={device}
+          isActive
+          frameProcessor={frameProcessor}
+        />
+      )}
+      </>
+  );
+}
+export default App;
 ```
 
 

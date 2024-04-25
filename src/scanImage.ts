@@ -1,8 +1,12 @@
-import { VisionCameraProxy } from 'react-native-vision-camera';
+import {
+  type FrameProcessorPlugin,
+  VisionCameraProxy,
+} from 'react-native-vision-camera';
 import type {
   Frame,
-  FrameProcessorPlugin,
+  ImageLabelerPlugin,
   ImageLabelingOptions,
+  Label,
 } from './types';
 import { Platform } from 'react-native';
 
@@ -12,11 +16,20 @@ const LINKING_ERROR: string =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-const plugin: FrameProcessorPlugin | undefined =
-  VisionCameraProxy.initFrameProcessorPlugin('scanImage');
-export function scanImage(frame: Frame, options: ImageLabelingOptions): object {
-  'worklet';
-  if (plugin == null) throw new Error(LINKING_ERROR);
-  // @ts-ignore
-  return options ? plugin.call(frame, options) : plugin.call(frame);
+export function createImageLabelerPlugin(
+  options: ImageLabelingOptions
+): ImageLabelerPlugin {
+  const plugin: FrameProcessorPlugin | undefined =
+    VisionCameraProxy.initFrameProcessorPlugin('scanImage', {
+      ...options,
+    });
+  if (!plugin) {
+    throw new Error(LINKING_ERROR);
+  }
+  return {
+    scanImage: (frame: Frame): Label => {
+      'worklet';
+      return plugin.call(frame) as unknown as Label;
+    },
+  };
 }

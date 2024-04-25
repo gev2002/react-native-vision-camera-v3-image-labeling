@@ -92,5 +92,7 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation 'com.google.mlkit:image-labeling:17.0.8'
   implementation project(':react-native-vision-camera')
+  implementation "androidx.camera:camera-core:1.1.0"
+
 }
 
