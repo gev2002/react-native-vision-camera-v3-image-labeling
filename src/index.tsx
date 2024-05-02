@@ -13,7 +13,7 @@ import type {
   ImageLabelingOptions,
   ImageLabelerPlugin,
 } from './types';
-import { useRunInJS } from 'react-native-worklets-core';
+import { useRunOnJS } from 'react-native-worklets-core';
 
 export const Camera = forwardRef(function Camera(
   props: CameraTypes,
@@ -21,7 +21,7 @@ export const Camera = forwardRef(function Camera(
 ) {
   const { device, callback, options = {}, ...p } = props;
   const { scanImage } = useImageLabeler(options);
-  const useWorklets = useRunInJS(
+  const useWorklets = useRunOnJS(
     (data: Label): void => {
       callback(data);
     },
